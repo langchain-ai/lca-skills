@@ -1,5 +1,5 @@
 ---
-name: fetching-langsmith-traces
+name: langsmith-fetch
 description: Fetches LangSmith traces for debugging agent behavior. Use when troubleshooting agent issues, reviewing conversation history, or investigating tool calls.
 ---
 
@@ -10,11 +10,9 @@ Requires `langsmith-fetch` in project dependencies and `LANGSMITH_API_KEY` in `.
 ## Commands
 
 ```bash
-# Fetch recent traces to directory (recommended)
+# Fetch recent traces (uses LANGSMITH_PROJECT from .env, or specify --project-uuid)
 uv run --env-file .env langsmith-fetch traces ./traces --limit 10
-
-# Fetch to stdout
-uv run --env-file .env langsmith-fetch traces --limit 5 --format json
+uv run --env-file .env langsmith-fetch traces ./traces --project-uuid <uuid> --limit 10
 
 # Fetch single trace by ID
 uv run --env-file .env langsmith-fetch trace <trace-id>
