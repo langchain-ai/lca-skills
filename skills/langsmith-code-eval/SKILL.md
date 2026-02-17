@@ -1,46 +1,101 @@
 ---
 name: langsmith-code-eval
-description: Create code-based evaluators for LangSmith-traced agents. Use when building custom evaluation logic for agent experiments, testing tool usage patterns, or scoring agent outputs programmatically.
+description: Creates code-based evaluators for LangSmith-traced agents. Use when building custom evaluation logic, testing tool usage patterns, or scoring agent outputs programmatically. Triggers on requests to evaluate agents, create evaluators, or run experiments against LangSmith datasets.
 ---
 
 # LangSmith Code Evaluator Creation
 
-Create evaluators for LangSmith experiments through collaborative inspection and implementation.
+Creates evaluators for LangSmith experiments through structured inspection and implementation.
+
+## Prerequisites
+
+- `langsmith` Python package installed
+- `LANGSMITH_API_KEY` environment variable set (check project's `.env` file)
 
 ## Workflow
 
-### Step 1: Locate and Understand the Agent
-Ask for the agent file. Read it to identify entry point, tools, and output format.
+Copy this checklist and track progress:
 
-### Step 2: Inspect Trace Structure
-Ask for LangSmith project name. Run:
-```bash
-python scripts/inspect_trace.py PROJECT_NAME [RUN_ID]
+```
+Evaluator Creation Progress:
+- [ ] Step 1: Discover environment
+- [ ] Step 2: Read agent code
+- [ ] Step 3: Inspect trace structure
+- [ ] Step 4: Inspect dataset structure
+- [ ] Step 5: Clarify evaluation goals
+- [ ] Step 6: Write evaluator
+- [ ] Step 7: Write experiment runner
+- [ ] Step 8: Run and iterate
 ```
 
-**Think critically about the trace:**
-- Does it match the agent? (e.g., a LangGraph trace for an OpenAI agent won't work)
-- Does it contain the data needed for the evaluation goals?
-- If not, clarify what's missing before proceeding.
+### Step 1: Discover Environment
 
-### Step 3: Clarify Evaluation Goals
+Ask the user how to run Python in their project. Common patterns:
+- `python` or `python3`
+- `uv run python`
+- `poetry run python`
+- `pdm run python`
+
+### Step 2: Read Agent Code
+
+Ask for the agent file path. Read it to identify:
+- Entry point function (look for `@traceable` decorator)
+- Available tools
+- Output format (what the function returns)
+
+### Step 3: Inspect Trace Structure
+
+Ask for the LangSmith project name. Run the inspection script located in this skill's directory:
+
+```bash
+{python_cmd} {skill_dir}/scripts/inspect_trace.py PROJECT_NAME [RUN_ID]
+```
+
+Replace `{python_cmd}` with the command from Step 1, and `{skill_dir}` with this skill's directory path.
+
+**Verify the trace matches the agent:**
+- Does the trace type match? (e.g., OpenAI trace for OpenAI agent)
+- Does it contain the data needed for evaluation?
+- If mismatched, clarify before proceeding.
+
+### Step 4: Inspect Dataset Structure
+
+Ask for the LangSmith dataset name. Run:
+
+```bash
+{python_cmd} {skill_dir}/scripts/inspect_dataset.py DATASET_NAME
+```
+
+This reveals:
+- Input schema (what gets passed to the agent)
+- Output schema (reference/expected outputs)
+- Metadata fields (e.g., `expected_tool`, `difficulty`, labels)
+
+**The dataset metadata often contains ground truth for evaluation** (e.g., which tool should be called, expected classification).
+
+### Step 5: Clarify Evaluation Goals
+
 Ask: "What behavior should pass vs fail?"
 
-### Step 4: Create the Evaluator
-Write the evaluator based on trace structure from Step 2. Consult the [Code Evaluator SDK docs](https://docs.langchain.com/langsmith/code-evaluator-sdk) for:
-- Available function signatures and parameters
-- Return type options
-- Row-level vs summary evaluators
+Common evaluation types:
+- **Tool usage**: Did the agent call the correct tool?
+- **Output correctness**: Does output match expected format/content?
+- **Policy compliance**: Did it follow specific rules?
+- **Classification**: Did it categorize correctly?
 
-### Step 5: Create Experiment Runner
-Create a script that runs the evaluator against a dataset. See [Evaluate LLM Applications](https://docs.langchain.com/langsmith/evaluate-llm-application) for `evaluate()` / `aevaluate()` usage.
+### Step 6: Write the Evaluator
 
-### Step 6: Run and Iterate
-Execute the experiment, review results in LangSmith, refine as needed.
+Create evaluator functions based on trace and dataset structure. See [EVALUATOR_REFERENCE.md](EVALUATOR_REFERENCE.md) for function signatures and return formats.
 
-## Reference
+### Step 7: Write Experiment Runner
 
-- [Code Evaluator SDK](https://docs.langchain.com/langsmith/code-evaluator-sdk) - Signatures, parameters, return types
-- [Evaluate LLM Applications](https://docs.langchain.com/langsmith/evaluate-llm-application) - `evaluate()` / `aevaluate()` usage
-- [Summary Evaluators](https://docs.langchain.com/langsmith/summary) - Experiment-level metrics (precision, recall, f1)
-- [Evaluation Concepts](https://docs.langchain.com/langsmith/evaluation-concepts) - Overview of evaluator types (code, LLM-as-judge, pairwise)
+Create a script that:
+1. Imports the agent's entry function
+2. Wraps it as a target function
+3. Runs `evaluate()` or `aevaluate()` against the dataset
+
+See [EVALUATOR_REFERENCE.md](EVALUATOR_REFERENCE.md) for `evaluate()` usage.
+
+### Step 8: Run and Iterate
+
+Execute the experiment, review results in LangSmith, refine evaluators as needed.

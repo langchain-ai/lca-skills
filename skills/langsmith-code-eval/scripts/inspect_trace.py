@@ -7,10 +7,10 @@ Use this to understand the structure of your agent's traces before building an e
 from langsmith import Client
 from typing import Optional
 import json
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (searches cwd and parent directories)
+load_dotenv(find_dotenv(usecwd=True))
 
 
 def inspect_trace_structure(
