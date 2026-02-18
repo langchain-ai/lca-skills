@@ -18,37 +18,37 @@ Copy this checklist and track progress:
 
 ```
 Evaluator Creation Progress:
-- [ ] Step 1: Discover environment
-- [ ] Step 2: Read agent code
-- [ ] Step 3: Inspect trace structure
-- [ ] Step 4: Inspect dataset structure
-- [ ] Step 5: Clarify evaluation goals
-- [ ] Step 6: Write evaluator
-- [ ] Step 7: Write experiment runner
-- [ ] Step 8: Run and iterate
+- [ ] Step 1: Gather info from user
+- [ ] Step 2: Inspect trace and dataset structure
+- [ ] Step 3: Read agent code
+- [ ] Step 4: Write evaluator
+- [ ] Step 5: Write experiment runner
+- [ ] Step 6: Run and iterate
 ```
 
-### Step 1: Discover Environment
+### Step 1: Gather Info from User
 
-Ask the user how to run Python in their project. Common patterns:
-- `python` or `python3`
-- `uv run python`
-- `poetry run python`
-- `pdm run python`
+**IMPORTANT: Do NOT search or explore the codebase. Ask the user all of these questions upfront using AskUserQuestion before doing anything else.**
 
-### Step 2: Read Agent Code
+Ask the user the following in a single AskUserQuestion call:
 
-Ask for the agent file path. Read it to identify:
-- Entry point function (look for `@traceable` decorator)
-- Available tools
-- Output format (what the function returns)
+1. **Python command**: How do you run Python in this project? (e.g., `python`, `python3`, `uv run python`, `poetry run python`)
+2. **Agent file path**: What is the path to your agent file?
+3. **LangSmith project name**: What is your LangSmith project name (where traces are logged)?
+4. **LangSmith dataset name**: What is the name of the dataset to evaluate against?
+5. **Evaluation goal**: What behavior should pass vs fail? Common types:
+   - **Tool usage**: Did the agent call the correct tool?
+   - **Output correctness**: Does output match expected format/content?
+   - **Policy compliance**: Did it follow specific rules?
+   - **Classification**: Did it categorize correctly?
 
-### Step 3: Inspect Trace Structure
+### Step 2: Inspect Trace and Dataset Structure
 
-Ask for the LangSmith project name. Run the inspection script located in this skill's directory:
+Using the info from Step 1, run the inspection scripts located in this skill's directory:
 
 ```bash
 {python_cmd} {skill_dir}/scripts/inspect_trace.py PROJECT_NAME [RUN_ID]
+{python_cmd} {skill_dir}/scripts/inspect_dataset.py DATASET_NAME
 ```
 
 Replace `{python_cmd}` with the command from Step 1, and `{skill_dir}` with this skill's directory path.
@@ -58,36 +58,25 @@ Replace `{python_cmd}` with the command from Step 1, and `{skill_dir}` with this
 - Does it contain the data needed for evaluation?
 - If mismatched, clarify before proceeding.
 
-### Step 4: Inspect Dataset Structure
-
-Ask for the LangSmith dataset name. Run:
-
-```bash
-{python_cmd} {skill_dir}/scripts/inspect_dataset.py DATASET_NAME
-```
-
-This reveals:
+**From the dataset inspection, note:**
 - Input schema (what gets passed to the agent)
 - Output schema (reference/expected outputs)
 - Metadata fields (e.g., `expected_tool`, `difficulty`, labels)
 
 **The dataset metadata often contains ground truth for evaluation** (e.g., which tool should be called, expected classification).
 
-### Step 5: Clarify Evaluation Goals
+### Step 3: Read Agent Code
 
-Ask: "What behavior should pass vs fail?"
+Read the agent file provided in Step 1 to identify:
+- Entry point function (look for `@traceable` decorator)
+- Available tools
+- Output format (what the function returns)
 
-Common evaluation types:
-- **Tool usage**: Did the agent call the correct tool?
-- **Output correctness**: Does output match expected format/content?
-- **Policy compliance**: Did it follow specific rules?
-- **Classification**: Did it categorize correctly?
-
-### Step 6: Write the Evaluator
+### Step 4: Write the Evaluator
 
 Create evaluator functions based on trace and dataset structure. See [EVALUATOR_REFERENCE.md](EVALUATOR_REFERENCE.md) for function signatures and return formats.
 
-### Step 7: Write Experiment Runner
+### Step 5: Write Experiment Runner
 
 Create a script that:
 1. Imports the agent's entry function
@@ -96,6 +85,6 @@ Create a script that:
 
 See [EVALUATOR_REFERENCE.md](EVALUATOR_REFERENCE.md) for `evaluate()` usage.
 
-### Step 8: Run and Iterate
+### Step 6: Run and Iterate
 
 Execute the experiment, review results in LangSmith, refine evaluators as needed.
